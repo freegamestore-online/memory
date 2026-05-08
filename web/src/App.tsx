@@ -15,10 +15,10 @@ function computeScore(moves: number, seconds: number): number {
 }
 
 export default function App() {
-  const [phase, setPhase] = useState<"menu" | "playing" | "over">("menu");
+  const [phase, setPhase] = useState<"menu" | "playing" | "over">("playing");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(getBestScore);
-  const [difficulty, setDifficulty] = useState<Difficulty>("easy");
+  const [difficulty] = useState<Difficulty>("easy");
   const [gameKey, setGameKey] = useState(0);
 
   const handleWin = useCallback(
@@ -40,17 +40,6 @@ export default function App() {
     setGameKey((k) => k + 1);
     setPhase("playing");
   }, []);
-
-  const changeDifficulty = useCallback(
-    (d: Difficulty) => {
-      setDifficulty(d);
-      if (phase !== "playing") return;
-      // Restart with new difficulty
-      setScore(0);
-      setGameKey((k) => k + 1);
-    },
-    [phase],
-  );
 
   return (
     <GameShell
@@ -83,56 +72,22 @@ export default function App() {
       }
     >
       <div className="relative w-full h-full">
-        {phase === "playing" ? (
-          <Game key={gameKey} difficulty={difficulty} onWin={handleWin} />
-        ) : (
-          <div className="flex flex-col items-center justify-center h-full gap-4">
-            <h1
-              className="text-4xl font-bold"
-              style={{ fontFamily: "Fraunces, serif" }}
+        <Game key={gameKey} difficulty={difficulty} onWin={handleWin} />
+        {phase === "over" && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4" style={{ background: "rgba(0,0,0,0.55)" }}>
+            <p
+              className="text-xl font-bold"
+              style={{ color: "var(--success)", fontFamily: "Fraunces, serif" }}
             >
-              Memory
-            </h1>
-            {phase === "over" && (
-              <p
-                className="text-xl font-bold"
-                style={{ color: "var(--success)", fontFamily: "Fraunces, serif" }}
-              >
-                You won! Score: {score}
-              </p>
-            )}
-            <p style={{ color: "var(--muted)" }}>
-              Flip cards and find matching pairs.
+              You won! Score: {score}
             </p>
-
-            {/* Difficulty selector */}
-            <div className="flex gap-2">
-              {(["easy", "medium", "hard"] as const).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => changeDifficulty(d)}
-                  className="px-3 py-1.5 text-sm font-semibold rounded-lg min-h-[2.75rem]"
-                  style={{
-                    background: difficulty === d ? "var(--accent)" : "var(--panel)",
-                    color: difficulty === d ? "#fff" : "var(--muted)",
-                    border: `1px solid ${difficulty === d ? "var(--accent)" : "var(--line)"}`,
-                  }}
-                >
-                  {d === "easy" ? "4\u00D74" : d === "medium" ? "5\u00D74" : "6\u00D75"}
-                </button>
-              ))}
-            </div>
-
             <button
               onClick={start}
               className="px-6 py-3 rounded-xl font-semibold min-h-[2.75rem]"
               style={{ background: "var(--accent)", color: "#fff" }}
             >
-              {phase === "menu" ? "Start Game" : "Play Again"}
+              Play Again
             </button>
-            <p className="text-xs" style={{ color: "var(--muted)" }}>
-              Press Space or Enter to start
-            </p>
           </div>
         )}
       </div>
