@@ -61,6 +61,23 @@ export default function App() {
             { label: "Score", value: score, accent: true },
             { label: "Best", value: bestScore },
           ]}
+          rules={
+            <div>
+              <h3 style={{marginBottom:'0.5rem',fontWeight:700}}>Memory</h3>
+              <p>Flip cards and find all matching pairs.</p>
+              <h4 style={{marginTop:'0.75rem',fontWeight:600}}>Controls</h4>
+              <ul style={{paddingLeft:'1.2rem',marginTop:'0.25rem'}}>
+                <li>Tap or click to flip a card</li>
+              </ul>
+              <h4 style={{marginTop:'0.75rem',fontWeight:600}}>Rules</h4>
+              <ul style={{paddingLeft:'1.2rem',marginTop:'0.25rem'}}>
+                <li>Flip two cards at a time</li>
+                <li>Match all pairs to win</li>
+                <li>Fewer moves = better score</li>
+                <li>Three grid sizes to choose from</li>
+              </ul>
+            </div>
+          }
           actions={<GameAuth />}
         />
       }
