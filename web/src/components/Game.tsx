@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useGameSounds } from "@freegamestore/games";
 
 const EMOJI_SET = [
   "\u{1F436}","\u{1F431}","\u{1F42D}","\u{1F439}","\u{1F430}","\u{1F98A}","\u{1F43B}","\u{1F43C}",
@@ -63,6 +64,9 @@ export function Game({ difficulty, onWin }: GameProps) {
   const [won, setWon] = useState(false);
   const lockRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const sounds = useGameSounds();
+  const soundsRef = useRef(sounds);
+  soundsRef.current = sounds;
 
   // Reset when difficulty changes
   useEffect(() => {
@@ -96,6 +100,7 @@ export function Game({ difficulty, onWin }: GameProps) {
 
       const next = cards.map((c) => (c.id === id ? { ...c, flipped: true } : c));
       setCards(next);
+      soundsRef.current.playTick();
 
       const newSelected = [...selected, id];
       setSelected(newSelected);
@@ -113,14 +118,17 @@ export function Game({ difficulty, onWin }: GameProps) {
           );
           setCards(matched);
           setSelected([]);
+          soundsRef.current.playClear();
 
           // Check win
           if (matched.every((c) => c.matched)) {
             setWon(true);
+            soundsRef.current.playLevelUp();
           }
         } else {
           // No match — flip back after delay
           lockRef.current = true;
+          soundsRef.current.playError();
           setTimeout(() => {
             setCards((prev) =>
               prev.map((c) =>
