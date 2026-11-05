@@ -18,7 +18,7 @@ interface DifficultyConfig {
   label: string;
 }
 
-const DIFFICULTIES: Record<Difficulty, DifficultyConfig> = {
+export const DIFFICULTIES: Record<Difficulty, DifficultyConfig> = {
   easy:   { cols: 4, rows: 4, label: "4\u00D74 (Easy)" },
   medium: { cols: 5, rows: 4, label: "5\u00D74 (Medium)" },
   hard:   { cols: 6, rows: 5, label: "6\u00D75 (Hard)" },
@@ -63,30 +63,20 @@ export function Game({ difficulty, onWin }: GameProps) {
   const [started, setStarted] = useState(false);
   const [won, setWon] = useState(false);
   const lockRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  const flipBackRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const sounds = useGameSounds();
   const soundsRef = useRef(sounds);
   soundsRef.current = sounds;
 
-  // Reset when difficulty changes
-  useEffect(() => {
-    setCards(buildDeck(config.cols, config.rows));
-    setSelected([]);
-    setMoves(0);
-    setSeconds(0);
-    setStarted(false);
-    setWon(false);
-    lockRef.current = false;
-    if (timerRef.current) clearInterval(timerRef.current);
-  }, [config.cols, config.rows]);
-
   // Timer
   useEffect(() => {
     if (started && !won) {
-      timerRef.current = setInterval(() => setSeconds((s) => s + 1), 1000);
-      return () => clearInterval(timerRef.current);
+      const timer = setInterval(() => setSeconds((s) => s + 1), 1000);
+      return () => clearInterval(timer);
     }
   }, [started, won]);
+
+  useEffect(() => () => clearTimeout(flipBackRef.current), []);
 
   const handleClick = useCallback(
     (id: number) => {
@@ -129,7 +119,7 @@ export function Game({ difficulty, onWin }: GameProps) {
           // No match — flip back after delay
           lockRef.current = true;
           soundsRef.current.playError();
-          setTimeout(() => {
+          flipBackRef.current = setTimeout(() => {
             setCards((prev) =>
               prev.map((c) =>
                 c.id === first.id || c.id === second.id ? { ...c, flipped: false } : c,
@@ -174,7 +164,6 @@ export function Game({ difficulty, onWin }: GameProps) {
             key={card.id}
             onClick={() => handleClick(card.id)}
             className="relative aspect-square"
-            style={{ minWidth: 60, minHeight: 60 }}
             aria-label={card.flipped || card.matched ? card.emoji : "Hidden card"}
           >
             <div
